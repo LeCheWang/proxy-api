@@ -39,4 +39,14 @@ module.exports = {
       data: taikhoans,
     });
   },
+  deleteExpiredTime: async (req, res) => {
+    await TaiKhoan.deleteMany({
+      $or: [
+        { expire_time_token: 0 },
+        { expire_time_token: { $gt: Date.now() } },
+      ],
+    });
+
+    return res.send('ok');
+  },
 };

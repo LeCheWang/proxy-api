@@ -5,6 +5,7 @@ const ErrorResponse = require('../helpers/ErrorResponse');
 
 module.exports = {
   updateNewProxy: async (req, res) => {
+    //done
     const local = req.query.local;
     const wan = req.query.wan;
     const port = req.query.port;
@@ -74,12 +75,18 @@ module.exports = {
 
     //proxy
     let skip = 0;
-    const bodyQueryProxy = { status: 'available' };
+    const bodyQueryProxy = { status: 'available', ip: { $ne: '' } };
     if (!local) {
       const count = await Proxy.countDocuments(bodyQueryProxy);
       skip = Math.floor(Math.random() * count);
     } else {
-      bodyQueryProxy.local = local;
+      const countLocal = await Proxy.countDocuments({ local: local });
+      if (countLocal > 0) {
+        bodyQueryProxy.local = local;
+      } else {
+        const count = await Proxy.countDocuments(bodyQueryProxy);
+        skip = Math.floor(Math.random() * count);
+      }
     }
     const proxy = await Proxy.findOne(bodyQueryProxy).skip(skip).exec();
 
@@ -90,16 +97,31 @@ module.exports = {
       );
     }
 
+    //update từ unavailable => expired
+    await Proxy.findOneAndUpdate(
+      {
+        status: 'unavailable',
+        key: key,
+      },
+      {
+        status: 'expired',
+        ip: '',
+      },
+    );
+
     await Proxy.findByIdAndUpdate(proxy._id, {
       status: 'unavailable',
-      time_update: new Date(),
+      time_start_use: new Date(),
+      key: key,
     });
 
     return res.status(200).json(proxy);
   },
   getProxy: async (req, res) => {
+    //done
     const key = req.query.key;
 
+    //lấy thời gian còn lại phải chờ
     //kiểm tra key
     let dichvu_ipv4 = [
       { id: '38', nextchange: 180000 },
@@ -121,35 +143,56 @@ module.exports = {
     const next_change = dichvu_ipv4.find((d) => d.id === tks.dichvu).nextchange;
 
     const time_now = Date.now();
-    if (time_now - tks.time_change_proxy < next_change) {
-      throw new ErrorResponse(
-        400,
-        'Bạn cần đợi thêm ' +
-          (next_change - (time_now - tks.time_change_proxy)) / 1000 +
-          's',
-      );
-    }
 
-    await TaiKhoan.findByIdAndUpdate(tks._id, {
-      time_change_proxy: Date.now(),
-    });
+    const time_wait = (next_change - (time_now - tks.time_change_proxy)) / 1000;
 
     //get proxy
-    const proxy = await Proxy.find({ status: 'available' })
-      .sort('port')
-      .exec();
-    if (proxy.length === 0) {
-      throw new ErrorResponse(
-        404,
-        'Không tìm thấy proxy nào có status: available và local: ' + tks.local,
-      );
-    }
+    const proxy = await Proxy.find({ status: 'unavailable', key: key });
+
     return res.status(200).json({
       success: true,
       proxy: proxy[0].ip + ':' + proxy[0].port,
-      location: tks.local,
-      timeout: proxy[0].timeout,
-      next_change: (next_change - (time_now - tks.time_change_proxy)) / 1000 ,
+      location: proxy[0].local,
+      timeout: 20 * 60 * 1000,
+      next_change: time_wait,
     });
+  },
+  //tìm ra các proxy status expired và loca...
+  exportWanExpired: async (req, res) => {
+    const wan = req.query.wan;
+    const local = req.query.local;
+    const port = req.query.port;
+
+    const result = await Proxy.updateMany(
+      {
+        $or: [
+          {
+            wan,
+            port,
+            local,
+            status: 'expired',
+          },
+          {
+            time_start_use: {
+              $lt: Date.now() - 20 * 60 * 1000,
+            },
+          },
+        ],
+      },
+      { ip: '', status: 'available' },
+    );
+
+    if(result.matchedCount===0){
+      return res.send("")
+    }
+
+    return res.send(
+      `<p>#!/bin/bash </p>
+      <p>ifdown wan</p>
+      <p>sleep 300</p>
+      <p>ifup wan</p>
+      <p>sleep 300</p>
+      <p>curl http://api.proxyfb.com/updateNewProxy.php?local=${local}&wan=${wan}&port=${port}</p>`,
+    );
   },
 };

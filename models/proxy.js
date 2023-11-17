@@ -50,6 +50,8 @@ const proxySchema = mongoose.Schema(
       type: String,
       default: '0',
     },
+    key: String,
+    time_start_use: Date,
   },
   {
     versionKey: false,
