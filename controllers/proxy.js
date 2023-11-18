@@ -165,25 +165,19 @@ module.exports = {
 
     const result = await Proxy.updateMany(
       {
-        $or: [
-          {
-            wan,
-            port,
-            local,
-            status: 'expired',
-          },
-          {
-            time_start_use: {
-              $lt: Date.now() - 20 * 60 * 1000,
-            },
-          },
-        ],
+        wan,
+        port,
+        local,
+        status: 'expired',
+        time_start_use: {
+          $lt: Date.now() - 20 * 60 * 1000,
+        },
       },
       { ip: '', status: 'available' },
     );
 
-    if(result.matchedCount===0){
-      return res.send("")
+    if (result.matchedCount === 0) {
+      return res.send('');
     }
 
     return res.send(
