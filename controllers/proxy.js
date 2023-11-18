@@ -105,13 +105,13 @@ module.exports = {
       },
       {
         status: 'expired',
-        ip: '',
+     //   ip: '',
       },
     );
 
     await Proxy.findByIdAndUpdate(proxy._id, {
       status: 'unavailable',
-      time_start_use: new Date(),
+      time_start_use: Date.now(),
       key: key,
     });
 
@@ -148,12 +148,14 @@ module.exports = {
 
     //get proxy
     const proxy = await Proxy.find({ status: 'unavailable', key: key });
-
-    return res.status(200).json({
+	
+	const timeout1 = time_now - proxy[0].time_start_use;
+    console.log(timeout1);
+	return res.status(200).json({
       success: true,
       proxy: proxy[0].ip + ':' + proxy[0].port,
       location: proxy[0].local,
-      timeout: 20 * 60 * 1000,
+      timeout: 1200 - timeout1/1000,
       next_change: time_wait,
     });
   },
@@ -179,7 +181,7 @@ module.exports = {
           },
         ],
       },
-      { ip: '', status: 'available' },
+      { ip: '', status: 'available', time_start_use: '', key: '' },
     );
 
     if(result.matchedCount===0){
@@ -187,12 +189,14 @@ module.exports = {
     }
 
     return res.send(
-      `<p>#!/bin/bash </p>
-      <p>ifdown wan</p>
-      <p>sleep 300</p>
-      <p>ifup wan</p>
-      <p>sleep 300</p>
-      <p>curl http://api.proxyfb.com/updateNewProxy.php?local=${local}&wan=${wan}&port=${port}</p>`,
+      `#!/bin/bash
+      ifdown wan
+      sleep 5
+      ifup wan
+	  sleep 10
+      wget -O /root/ip.sh "http://api.proxyfb.com/updateNewProxy.php?local=${local}&wan=${wan}&port=${port}"
+      sleep 5
+      wget -O /root/ip.sh "http://api.proxyfb.com/updateNewProxy.php?local=${local}&wan=${wan}&port=${port}"`,
     );
   },
 };

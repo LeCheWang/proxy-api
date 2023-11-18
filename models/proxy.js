@@ -51,7 +51,7 @@ const proxySchema = mongoose.Schema(
       default: '0',
     },
     key: String,
-    time_start_use: Date,
+    time_start_use: Number,
   },
   {
     versionKey: false,
