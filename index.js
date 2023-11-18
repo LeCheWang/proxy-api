@@ -13,6 +13,6 @@ app.use(express.urlencoded({extended: true}))
 connectDB();
 router(app)
 
-app.listen(5000, ()=>{
+app.listen(8080, ()=>{
     console.log("server run at port 5000");
 })
