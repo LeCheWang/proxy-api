@@ -11,7 +11,7 @@ module.exports = {
       //   await TaiKhoan.deleteMany();
       // Lưu dữ liệu vào schema
       for (const item of response.data.data) {
-        const tk = await TaiKhoan.findOne({ id: item.id }); 
+        const tk = await TaiKhoan.findOne({ id: item.id });
         if (!tk) {
           await TaiKhoan.create(item);
         } else {
@@ -40,13 +40,6 @@ module.exports = {
     });
   },
   deleteExpiredTime: async (req, res) => {
-    // await TaiKhoan.deleteMany({
-    //   $or: [
-    //     { expire_time_token: 0 },
-    //     { expire_time_token: { $gt: Date.now() } },
-    //   ],
-    // });
-
     //lấy ra toàn bộ
     const tks = await TaiKhoan.find();
 
@@ -58,10 +51,14 @@ module.exports = {
       const cutoffTime = new Date(currentTime);
       cutoffTime.setDate(cutoffTime.getDate() - tk.songaymua); // 30 là số ngày mua
 
-      await TaiKhoan.deleteOne({
-        _id: tk._id,
-        thoigianmua: { $lte: cutoffTime },
-      });
+      const thoigianmua = new Date(tk.thoigianmua);
+      console.log('chi tiet: ', tk.chitiet);
+      console.log('thoi gian mua', thoigianmua);
+      if (thoigianmua <= cutoffTime) {
+        await TaiKhoan.deleteOne({
+          _id: tk._id,
+        });
+      }
     }
 
     return res.send('ok');
