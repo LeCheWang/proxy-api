@@ -40,12 +40,29 @@ module.exports = {
     });
   },
   deleteExpiredTime: async (req, res) => {
-    await TaiKhoan.deleteMany({
-      $or: [
-        { expire_time_token: 0 },
-        { expire_time_token: { $gt: Date.now() } },
-      ],
-    });
+    // await TaiKhoan.deleteMany({
+    //   $or: [
+    //     { expire_time_token: 0 },
+    //     { expire_time_token: { $gt: Date.now() } },
+    //   ],
+    // });
+
+    //lấy ra toàn bộ
+    const tks = await TaiKhoan.find();
+
+    for (let tk of tks) {
+      // Lấy thời điểm hiện tại
+      const currentTime = new Date();
+
+      // Tính thời điểm trước đó dựa trên số ngày mua
+      const cutoffTime = new Date(currentTime);
+      cutoffTime.setDate(cutoffTime.getDate() - tk.songaymua); // 30 là số ngày mua
+
+      await TaiKhoan.deleteOne({
+        _id: tk._id,
+        thoigianmua: { $lte: cutoffTime },
+      });
+    }
 
     return res.send('ok');
   },
