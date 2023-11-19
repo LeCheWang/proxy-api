@@ -105,7 +105,7 @@ module.exports = {
       },
       {
         status: 'expired',
-     //   ip: '',
+        //   ip: '',
       },
     );
 
@@ -114,8 +114,16 @@ module.exports = {
       time_start_use: Date.now(),
       key: key,
     });
+    //next_change
+    const time_wait = (next_change - (time_now - tks.time_change_proxy)) / 1000;
 
-    return res.status(200).json(proxy);
+    return res.status(200).json({
+      success: true,
+      proxy: proxy.ip + ':' + proxy.port,
+      location: proxy.local,
+      next_change: time_wait,
+      time_out: 20 * 60,
+    });
   },
   getProxy: async (req, res) => {
     //done
@@ -148,14 +156,14 @@ module.exports = {
 
     //get proxy
     const proxy = await Proxy.find({ status: 'unavailable', key: key });
-	
-	const timeout1 = time_now - proxy[0].time_start_use;
+
+    const timeout1 = time_now - proxy[0].time_start_use;
     console.log(timeout1);
-	return res.status(200).json({
+    return res.status(200).json({
       success: true,
       proxy: proxy[0].ip + ':' + proxy[0].port,
       location: proxy[0].local,
-      timeout: 1200 - timeout1/1000,
+      timeout: 1200 - timeout1 / 1000,
       next_change: time_wait,
     });
   },
