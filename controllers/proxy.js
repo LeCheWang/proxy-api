@@ -187,7 +187,11 @@ module.exports = {
     );
 
     if (result.matchedCount === 0) {
-      return res.send('');
+      return res.send(`
+        1
+        2
+        
+      `);
     }
 
     return res.send(
