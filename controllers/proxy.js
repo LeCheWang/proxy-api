@@ -1,3 +1,5 @@
+const moment = require('moment-timezone');
+moment.tz.setDefault('Asia/Ho_Chi_Minh');
 const requestIp = require('request-ip');
 const Proxy = require('../models/proxy');
 const TaiKhoan = require('../models/taikhoan');
@@ -10,12 +12,16 @@ module.exports = {
     const wan = req.query.wan;
     const port = req.query.port;
 
+    const currentTime = moment();
+
     const oldProxy = await Proxy.findOne({ local, wan, port });
+
+    const time_update = currentTime.format('YYYY-MM-DD HH:mm:ss');
     let newProxy;
     if (oldProxy) {
       newProxy = await Proxy.findOneAndUpdate(
         { local, wan, port },
-        { ip: requestIp.getClientIp(req), time_update: new Date() },
+        { ip: requestIp.getClientIp(req), time_update: time_update },
         { new: true },
       );
     } else {
@@ -25,7 +31,7 @@ module.exports = {
         wan,
         port,
         ip: requestIp.getClientIp(req),
-        time_update: new Date(),
+        time_update: time_update,
       });
     }
 
