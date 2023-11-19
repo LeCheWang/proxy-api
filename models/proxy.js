@@ -55,7 +55,6 @@ const proxySchema = mongoose.Schema(
   },
   {
     versionKey: false,
-    timestamps: true,
   },
 );
 
