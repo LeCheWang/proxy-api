@@ -180,7 +180,7 @@ module.exports = {
         local,
         status: 'expired',
         time_start_use: {
-          $lt: Date.now() - 20 * 60 * 1000,
+          $lt: Date.now() - 0 //20 * 60 * 1000,
         },
       },
       { ip: '', status: 'available', time_start_use: '', key: '' },
