@@ -12,7 +12,7 @@ module.exports = {
     const wan = req.query.wan;
     const port = req.query.port;
 
-    const currentTime = moment();
+    const currentTime = moment.tz('Asia/Ho_Chi_Minh');
 
     const oldProxy = await Proxy.findOne({ local, wan, port });
 
