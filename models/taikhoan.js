@@ -27,7 +27,7 @@ const tkSchema = mongoose.Schema(
       default: null,
     },
     thoigianmua: {
-      type: Date,
+      type: String,
       required: true,
     },
     songaymua: {

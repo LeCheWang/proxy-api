@@ -11,9 +11,7 @@ module.exports = {
       //   await TaiKhoan.deleteMany();
       // Lưu dữ liệu vào schema
       for (const item of response.data.data) {
-        const tk = await TaiKhoan.findOne({ id: item.id });
-        item.thoigianmua = new Date(item.thoigianmua);
-        console.log(item.thoigianmua);
+        const tk = await TaiKhoan.findOne({ id: item.id }); 
         if (!tk) {
           await TaiKhoan.create(item);
         } else {
