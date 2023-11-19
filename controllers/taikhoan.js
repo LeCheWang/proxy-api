@@ -19,6 +19,26 @@ module.exports = {
         }
       }
     }
+    //xoa het nhung cai het hanj
+    const tks = await TaiKhoan.find();
+
+    for (let tk of tks) {
+      // Lấy thời điểm hiện tại
+      const currentTime = new Date();
+
+      // Tính thời điểm trước đó dựa trên số ngày mua
+      const cutoffTime = new Date(currentTime);
+      cutoffTime.setDate(cutoffTime.getDate() - tk.songaymua); // 30 là số ngày mua
+
+      const thoigianmua = new Date(tk.thoigianmua);
+      console.log('chi tiet: ', tk.chitiet);
+      console.log('thoi gian mua', thoigianmua);
+      if (thoigianmua <= cutoffTime) {
+        await TaiKhoan.deleteOne({
+          _id: tk._id,
+        });
+      }
+    }
 
     return res.status(200).json({
       statusCode: 200,
