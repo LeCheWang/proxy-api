@@ -13,10 +13,12 @@ module.exports = {
     const port = req.query.port;
 
     const currentTime = moment.tz('Asia/Ho_Chi_Minh');
+    // Cộng thêm 7 giờ
+    const newTime = currentTime.add(7, 'hours');
 
     const oldProxy = await Proxy.findOne({ local, wan, port });
 
-    const time_update = currentTime.format('YYYY-MM-DD HH:mm:ss');
+    const time_update = newTime.format('YYYY-MM-DD HH:mm:ss');
     let newProxy;
     if (oldProxy) {
       newProxy = await Proxy.findOneAndUpdate(
