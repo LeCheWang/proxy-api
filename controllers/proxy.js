@@ -45,7 +45,7 @@ module.exports = {
   },
   changeProxy: async (req, res) => {
     const key = req.query.key;
-    let local = req.query.local;
+    let local = req.query.location;
 
     //kiểm tra key
     let dichvu_ipv4 = [
